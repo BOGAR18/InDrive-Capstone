@@ -1,33 +1,42 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
     Box,
     Text,
     VStack,
+    HStack,
     Button,
     useToast,
     Input,
     Center,
-    Modal,
     FormControl,
+    Modal,
+    Image,
+    Spinner,
+    Icon,
 } from "native-base";
+import { Ionicons } from "@expo/vector-icons";
 import Header from "../components/header";
-import MapView, { Marker, Polyline } from "react-native-maps";
-import * as Location from 'expo-location';
+import MapView, { Marker } from "react-native-maps";
+import * as Location from "expo-location";
 
 const Maps = () => {
     const [location, setLocation] = useState(null);
     const [region, setRegion] = useState(null);
-    const [address, setAddress] = useState("");     // New state for address input
-    const [pickupCoords, setPickupCoords] = useState(null);
+    const [address, setAddress] = useState("");
     const [destinationCoords, setDestinationCoords] = useState(null);
+    const [isDestinationSet, setIsDestinationSet] = useState(false);
+    const [isBooking, setIsBooking] = useState(false);
+    const [motorPosition, setMotorPosition] = useState(null);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isSearchingDriver, setIsSearchingDriver] = useState(false);
+    const mapRef = useRef(null);
     const toast = useToast();
 
-    // Fetch user's current location
     const fetchLocation = async () => {
         const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
+        if (status !== "granted") {
             toast.show({
-                title: "Location permission denied",
+                title: "Izin lokasi ditolak",
                 status: "error",
                 duration: 3000,
                 isClosable: true,
@@ -50,7 +59,6 @@ const Maps = () => {
         fetchLocation();
     }, []);
 
-    // Handle user input for place name
     const handleDestinationSet = async () => {
         try {
             const geocode = await Location.geocodeAsync(address);
@@ -63,15 +71,10 @@ const Maps = () => {
                     latitudeDelta: 0.01,
                     longitudeDelta: 0.01,
                 });
-                toast.show({
-                    title: "Destination set!",
-                    status: "success",
-                    duration: 2000,
-                    isClosable: true,
-                });
+                setIsDestinationSet(true);
             } else {
                 toast.show({
-                    title: "Location not found",
+                    title: "Lokasi tidak ditemukan",
                     status: "error",
                     duration: 3000,
                     isClosable: true,
@@ -79,7 +82,7 @@ const Maps = () => {
             }
         } catch (error) {
             toast.show({
-                title: "Error fetching location",
+                title: "Terjadi kesalahan saat mencari lokasi",
                 status: "error",
                 duration: 3000,
                 isClosable: true,
@@ -87,53 +90,126 @@ const Maps = () => {
         }
     };
 
+    const handleChangeDestination = () => {
+        setAddress("");
+        setDestinationCoords(null);
+        setIsDestinationSet(false);
+    };
+
+    const handleBooking = () => {
+        setIsSearchingDriver(true);
+
+        setTimeout(() => {
+            setIsSearchingDriver(false);
+            setIsModalVisible(true);
+            setMotorPosition({
+                latitude: location.latitude + 0.002,
+                longitude: location.longitude + 0.001,
+            });
+            setIsBooking(true); // Mengindikasikan proses booking selesai
+        }, 5000);
+    };
+
     return (
-        <Box flex={1}>
-            <Header title="Where to today?" withBack={true} />
-            <Box bg={"white"} p={3}>
-                <VStack space={4}>
-                    <FormControl>
-                        <Input
-                            placeholder="Current Location"
-                            value={location ? `Lat: ${location.latitude}, Lng: ${location.longitude}` : "Waiting for location..."}
-                            isReadOnly
-                        />
-                    </FormControl>
-                    <FormControl>
-                        <Input
-                            placeholder="Enter destination (e.g., Surabaya)"
-                            value={address}
-                            onChangeText={setAddress}
-                        />
-                    </FormControl>
-                    <Button colorScheme="blue" onPress={handleDestinationSet} isDisabled={!address}>
-                        Set Destination
-                    </Button>
-                </VStack>
+        <Box flex={1} bg="coolGray.100">
+            <Header title="Kemana Hari Ini?" withBack={true} />
+            {/* Form Input */}
+            <Box bg="white" px={4} py={3} borderBottomWidth={1} borderColor="coolGray.200">
+                {!isBooking ? ( // Hanya tampilkan form jika belum memesan
+                    <VStack space={4}>
+                        <FormControl>
+                            <Input
+                                value={location ? "Lokasi Anda Saat Ini" : "Menunggu lokasi..."}
+                                isReadOnly
+                                bg="coolGray.100"
+                                InputLeftElement={<Icon as={Ionicons} name="location-outline" size="sm" ml={3} />}
+                            />
+                        </FormControl>
+                        <FormControl>
+                            <Input
+                                placeholder="Masukkan tujuan (contoh: Surabaya)"
+                                value={address}
+                                onChangeText={setAddress}
+                                InputLeftElement={<Icon as={Ionicons} name="search" size="sm" ml={3} />}
+                            />
+                        </FormControl>
+                        {isDestinationSet ? (
+                            <HStack space={2}>
+                                <Button colorScheme="blue" flex={1} onPress={handleChangeDestination}>
+                                    Ubah Lokasi
+                                </Button>
+                                <Button colorScheme="green" flex={1} onPress={handleBooking}>
+                                    Pesan
+                                </Button>
+                            </HStack>
+                        ) : (
+                            <Button colorScheme="blue" onPress={handleDestinationSet} isDisabled={!address}>
+                                Set Tujuan
+                            </Button>
+                        )}
+                    </VStack>
+                ) : (
+                    <Text fontSize="md" color="gray.600" textAlign="center">
+                        Permintaan Anda sedang diproses. Driver akan segera tiba.
+                    </Text>
+                )}
             </Box>
 
-            <Box flex={4}>
+            {/* Map View */}
+            <Box flex={1}>
                 {location && region ? (
                     <MapView
+                        ref={mapRef}
                         style={{ flex: 1 }}
                         region={region}
                         showsUserLocation={true}
-                        onPress={(event) => setPickupCoords(event.nativeEvent.coordinate)}
                     >
-                        <Marker coordinate={location} title="My Location" />
-                        {pickupCoords && (
-                            <Marker coordinate={pickupCoords} title="Pickup Point" pinColor="green" />
-                        )}
+                        <Marker coordinate={location} title="Lokasi Saya" />
                         {destinationCoords && (
-                            <Marker coordinate={destinationCoords} title="Destination" pinColor="blue" />
+                            <Marker coordinate={destinationCoords} title="Tujuan" pinColor="blue" />
+                        )}
+                        {motorPosition && (
+                            <Marker coordinate={motorPosition} title="Driver">
+                                <Image
+                                    source={require("../assets/founder.png")}
+                                    borderRadius="full"
+                                    alt="Driver"
+                                    h={60}
+                                    w={60}
+                                />
+                            </Marker>
                         )}
                     </MapView>
                 ) : (
                     <Center flex={1}>
-                        <Text>Loading location...</Text>
+                        <Spinner size="lg" />
+                        <Text mt={3}>Memuat lokasi...</Text>
                     </Center>
                 )}
             </Box>
+
+            {/* Modal Pencarian Driver */}
+            <Modal isOpen={isSearchingDriver} onClose={() => setIsSearchingDriver(false)}>
+                <Modal.Content>
+                    <Modal.Body>
+                        <Center>
+                            <Spinner size="lg" />
+                            <Text mt={4}>Mencari driver untukmu...</Text>
+                        </Center>
+                    </Modal.Body>
+                </Modal.Content>
+            </Modal>
+
+            {/* Modal Konfirmasi Booking */}
+            <Modal isOpen={isModalVisible} onClose={() => setIsModalVisible(false)}>
+                <Modal.Content>
+                    <Modal.CloseButton />
+                    <Modal.Header>Pesanan Berhasil</Modal.Header>
+                    <Modal.Body>
+                        <Text>Driver sedang menuju lokasi Anda.</Text>
+                    </Modal.Body>
+                </Modal.Content>
+            </Modal>
         </Box>
     );
 };

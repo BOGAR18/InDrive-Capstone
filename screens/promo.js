@@ -29,7 +29,7 @@ const Promo = () => {
 
             <VStack p={4} space={2}>
                 <Text fontSize="lg" fontWeight="bold">{item.text}</Text>
-                <Text fontSize="sm" color="gray.600">{item.description || "Deskripsi Promo"}</Text>
+                <Text fontSize="sm" color="gray.600" numberOfLines={1}>{item.description || "Deskripsi Promo"}</Text>
                 <Button
                     onPress={() => navigation.navigate('PromoDetail', { promo: item })}
                     mt={2}

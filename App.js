@@ -69,10 +69,10 @@ const Tabs = ({ keyboardVisible }) => {
               iconName = focused ? "home" : "home-outline";
               break;
             case "History":
-              iconName = focused ? "book" : "book-outline";
+              iconName = focused ? "clipboard" : "clipboard-outline";
               break;
-            case "Maps":
-              iconName = focused ? "car" : "car-outline";
+            case "Profile":
+              iconName = focused ? "person" : "person-outline";
               break;
             default:
               iconName = "home-outline"; // Fallback icon
@@ -100,21 +100,21 @@ const Tabs = ({ keyboardVisible }) => {
     >
       <Tab.Screen name="Home" component={Home} options={noHead} />
       <Tab.Screen
-        name="Maps"
-        component={Maps}
+        name="History"
+        component={History}
         options={{
           headerShown: false,
           tabBarButton: (props) => (
             <CustomTabBarButton {...props}>
-              <Ionicons name="car" size={35} color="black" />
-              <Text alignSelf={"center"} color={"black"} style={styles.textIcon}>
-                Request
+              <Ionicons name="clipboard" size={35} color="white" />
+              <Text alignSelf={"center"} color={"white"} style={styles.textIcon}>
+                History
               </Text>
             </CustomTabBarButton>
           ),
         }}
       />
-      <Tab.Screen name="History" component={History} options={noHead} />
+      <Tab.Screen name="Profile" component={Profile} options={noHead} />
     </Tab.Navigator>
   );
 };
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
   },
   textIcon: {
     marginTop: -5,
-    color: "black",
+    color: "white",
     fontSize: 12,
   },
   tabBarStyle: {

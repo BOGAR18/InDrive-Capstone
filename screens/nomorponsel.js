@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, VStack, Text, HStack, Input, Button, Select, Modal, Center } from "native-base";
+import { Box, VStack, Text, HStack, Input, Button, Select, Modal, Center, InputGroup, InputLeftAddon } from "native-base";
 import { useNavigation } from "@react-navigation/native";
 import Header from "../components/header";
 
@@ -22,14 +22,14 @@ const NomorPonsel = () => {
     setPhoneNumber(value); // Awali nomor telepon dengan kode negara
   };
 
-  const handlePhoneNumberChange = (text) => {
-    // Tetap awali dengan kode negara meskipun user mengubah input
-    const prefix = selectedCountry;
-    const newNumber = text.startsWith(prefix)
-      ? text
-      : prefix + text.replace(/^\+?\d*/, ""); // Hapus prefiks lama, tambahkan prefiks baru
-    setPhoneNumber(newNumber);
-  };
+  // const handlePhoneNumberChange = (text) => {
+  //   // Tetap awali dengan kode negara meskipun user mengubah input
+  //   const prefix = selectedCountry;
+  //   const newNumber = text.startsWith(prefix)
+  //     ? text
+  //     : prefix + text.replace(/^\+?\d*/, ""); // Hapus prefiks lama, tambahkan prefiks baru
+  //   setPhoneNumber(newNumber);
+  // };
 
   const handleSave = () => {
     console.log("Kode Negara:", selectedCountry);
@@ -84,14 +84,18 @@ const NomorPonsel = () => {
                   />
                 ))}
               </Select>
-              <Input
-                flex={1}
-                placeholder=" 81234567890"
-                keyboardType="number-pad"
-                value={phoneNumber}
-                onChangeText={handlePhoneNumberChange}
-              />
+
+              <InputGroup w={{ base: "70%", md: "285" }}>
+                <InputLeftAddon children={selectedCountry} />
+                <Input
+                  w={{ base: "70%", md: "100%" }}
+                  placeholder="81234567890"
+                  keyboardType="number"
+                  value={phoneNumber}
+                />
+              </InputGroup>
             </HStack>
+
             <Button mt={4} onPress={handleSave} bgColor="#A7E92F">
               Simpan
             </Button>
