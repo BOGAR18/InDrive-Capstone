@@ -1,111 +1,104 @@
-import { Text, Button, Box, VStack, Input, Heading, FormControl, Pressable, StatusBar, Image, Center } from "native-base";
-import { useState } from "react";
-import { loginUser } from "../actions/AuthAction";
-import { storeData } from "../utils";
+import React, { useState } from "react";
+import { Box, Center, Button, Text, Image, StatusBar, FlatList } from "native-base";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Dimensions } from "react-native";
+
+const { width } = Dimensions.get("window");
+
+const slides = [
+  {
+    key: '1',
+    text: 'App where you set the price',
+    image: require("../assets/slides1.png"), 
+  },
+  {
+    key: '2',
+    text: 'Your safety is our priority',
+    image: require("../assets/slides2.png"), 
+  },
+];
 
 const Login = ({ navigation }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [formError, setFormError] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  const login = async () => {
-    if (email && password) {
-      try {
-        const user = await loginUser(email, password);
-        if (user.status === 'admin') {
-          await storeData('adminStatus', true);
-          navigation.replace('AdminTabs');
-        } else {
-          await storeData('adminStatus', false);
-          navigation.replace('Tabs');
-        }
-      } catch (error) {
-        setFormError('Email atau Password salah, Harap masukan Email atau Password dengan benar');
-      }
-    } else {
-      setFormError('Harap isi form login dengan lengkap dan benar');
+  const handleLogin = () => {
+    // Navigate to the tab navigator instead of the Home screen
+    navigation.replace("Tabs"); // Ensure this matches your Tab Navigator screen name
+  };
+
+  const renderItem = ({ item }) => (
+    <Box width={width} alignItems="center" justifyContent="center" padding={4}>
+      <Image 
+        source={item.image} 
+        alt="Slide Image" 
+        width={width * 0.9} // Increased width for larger images
+        height={width * 0.8} // Increased height for larger images
+        resizeMode="contain" 
+      />
+      <Text fontSize="2xl" fontWeight="bold" textAlign="center" marginTop={4}>
+        {item.text}
+      </Text>
+      {/* Dots specific to each slide */}
+      <Box flexDirection="row" justifyContent="center" marginTop={2}>
+        {slides.map((_, index) => (
+          <Box
+            key={index}
+            width={3}
+            height={3}
+            borderRadius="full"
+            backgroundColor={currentIndex === index ? "#A7E92F" : "gray.300"}
+            margin={1}
+          />
+        ))}
+      </Box>
+    </Box>
+  );
+
+  const onViewRef = React.useRef(({ viewableItems }) => {
+    if (viewableItems.length > 0) {
+      setCurrentIndex(viewableItems[0].index);
     }
+  });
+
+  const viewabilityConfig = {
+    itemVisiblePercentThreshold: 50
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }}>
       <StatusBar barStyle="dark-content" />
-      <Center flex={1} mb={10}>
-        <Image
-          source={require("../assets/logo.png")}
-          w={100}
-          h={100}
-          alt="Logo"
-          mb={8}
-        />
-        <Box
-          width="85%"
-          borderRadius={10}
-          bgColor="#fff"
-          shadow={2}
-          p={8}
-          alignItems="center"
+      <Image
+        source={require("../assets/indrive-logo.png")} // Ensure this path is correct for your logo
+        alt="Logo"
+        size="sm"
+        width={150}
+        mt={5}
+        ml={5}
+        alignSelf={"center"}
+      />
+
+      <FlatList
+        data={slides}
+        renderItem={renderItem}
+        keyExtractor={item => item.key}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onViewableItemsChanged={onViewRef.current}
+        viewabilityConfig={viewabilityConfig}
+      />
+
+      <Center padding={5} mb={10}>
+        <Button
+          backgroundColor={"#A7E92F"}
+          onPress={handleLogin}
+          width={"100%"}
         >
-          <Heading fontSize="xl" color="#004aad" mb={4}>
-            Login
-          </Heading>
-          <VStack space={5} width="100%">
-            <FormControl isInvalid={!!formError}>
-              <FormControl.Label>
-                <Text fontSize="md" color="#004aad">Email</Text>
-              </FormControl.Label>
-              <Input
-                h={12}
-                borderRadius={8}
-                borderWidth={1}
-                fontSize="md"
-                bgColor="#E1E8F0"
-                borderColor="#004aad"
-                placeholder="Masukkan Email"
-                value={email}
-                onChangeText={setEmail}
-              />
-            </FormControl>
-
-            <FormControl isInvalid={!!formError}>
-              <FormControl.Label>
-                <Text fontSize="md" color="#004aad">Password</Text>
-              </FormControl.Label>
-              <Input
-                h={12}
-                borderRadius={8}
-                borderWidth={1}
-                fontSize="md"
-                bgColor="#E1E8F0"
-                borderColor="#004aad"
-                placeholder="Masukkan Password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-              />
-              {formError ? (
-                <FormControl.ErrorMessage>{formError}</FormControl.ErrorMessage>
-              ) : null}
-            </FormControl>
-
-            <Button
-              h={12}
-              borderRadius={8}
-              bgColor="#FFCC00"
-              _text={{ color: "#004aad", fontWeight: "bold" }}
-              onPress={login}
-            >
-              Login
-            </Button>
-
-            {/* <Pressable onPress={() => navigation.navigate("Register")}>
-              <Text color="#004aad" fontSize="sm" textAlign="center" mt={2}>
-                Belum memiliki akun? <Text fontWeight="bold" underline>Registrasi</Text>
-              </Text>
-            </Pressable> */}
-          </VStack>
-        </Box>
+          <Text fontSize={"xl"} bold>Continue</Text> 
+        </Button>
+        <Text textAlign={"center"} mt={2} fontSize={"sm"}>
+          Joining our app means you agree with our Terms of Use and Privacy Policy
+        </Text>
       </Center>
     </SafeAreaView>
   );

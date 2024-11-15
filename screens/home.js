@@ -1,101 +1,201 @@
-import React, { useEffect, useState } from "react";
-import { Box, Image, Text, Heading, VStack, Icon, Button } from "native-base";
-import Header from "../components/header";
+import React from "react";
+import { Box, Text, VStack, HStack, Input, FlatList, Image, Icon, Button } from "native-base";
+import { Dimensions, TouchableOpacity } from "react-native";
+import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from "@expo/vector-icons";
-import FIREBASE from "../actions/config/FIREBASE";
-import { getData } from "../utils";
-import { useNavigation } from "@react-navigation/native";
+import { beritaData } from "../databerita";
+
+const featureData = [
+    { id: '1', name: 'Motorcycle', image: require('../assets/motor.png'), screen: 'Motor' },
+    { id: '2', name: 'Ride', image: require('../assets/car.png'), screen: 'Mobil' },
+    { id: '3', name: '6-Seater', image: require('../assets/minibus.png'), screen: 'Minibus' },
+    { id: '4', name: 'Couriers', image: require('../assets/courier.png'), screen: 'CouriersScreen' },
+    { id: '5', name: 'Food', image: require('../assets/food.png'), screen: 'FoodScreen' },
+    { id: '6', name: 'Mart', image: require('../assets/mart.png'), screen: 'MartScreen' },
+];
+
+const ratingData = [
+    { id: '1', image: require('../assets/makanan1.png'), heading: 'Rumah Makan Cak Imien Jemursari, Surabaya', description: 'Restoran', rating: 4.5 },
+    { id: '2', image: require('../assets/makanan2.png'), heading: 'Nasi Goreng Gemoy, Surabaya', description: 'Aneka Nasi', rating: 4.2},
+    { id: '3', image: require('../assets/makanan3.png'), heading: 'Ayam Bakar Sambal Ireng Puolz, Surabaya', description: 'Ayam dan Bebek', rating: 3.8 },
+    { id: '4', image: require('../assets/makanan4.png'), heading: 'MIXUE CitraLand Driyorejo CBD, Surabaya', description: 'Eskrim dan Minuman', rating: 4.8 },
+    { id: '5', image: require('../assets/makanan5.png'), heading: 'Martabak Terang Bulan BOGASARI Bandung Cabang Menganti', description: 'Jajanan, Sweets', rating: 3.5 },
+];
 
 const Home = () => {
     const navigation = useNavigation();
-    const [Home, setHome] = useState(null);
+    const screenWidth = Dimensions.get("window").width;
 
-    const getUserData = async () => {
-        try {
-            const userData = await getData("user");
+    const renderRatingItem = ({ item }) => (
+        <Box
+            bg="white"
+            borderWidth={1}
+            borderColor="gray.300"
+            borderRadius="md"
+            shadow={2}
+            overflow="hidden"
+            mb={4}
+            p={4}
+            width={screenWidth * 0.6} 
+            mr={4} 
+        >
+            <Image
+                source={item.image}
+                alt={item.heading}
+                width="100%"
+                height={150}
+                resizeMode="cover"
+                borderRadius="md"
+            />
+            <VStack space={2} mt={3}>
+                <Text fontSize="lg" fontWeight="bold" numberOfLines={2} ellipsizeMode="tail">
+                    {item.heading}
+                </Text>
+                <Text fontSize="sm" color="gray.600">
+                    {item.description}
+                </Text>
+                <HStack alignItems="center" space={1}>
+                    <Icon as={MaterialIcons} name="star" color="yellow.500" size="sm" />
+                    <Text fontSize="sm" color="gray.600">
+                        {item.rating}
+                    </Text>
+                </HStack>
+            </VStack>
+        </Box>
+    );
 
-            if (userData) {
-                const userRef = FIREBASE.database().ref(`users/${userData.uid}`);
-                const snapshot = await userRef.once("value");
-                const updatedUserData = snapshot.val();
-
-                if (updatedUserData) {
-                    console.log("Updated user data:", updatedUserData);
-                    setHome(updatedUserData);
-                } else {
-                    console.log("User data not found");
-                }
-            }
-        } catch (error) {
-            console.error("Error fetching user data:", error);
-        }
-    };
-
-    useEffect(() => {
-        const unsubscribe = navigation.addListener("focus", getUserData);
-        return () => {
-            unsubscribe();
-        };
-    }, [navigation]);
+    const renderFeatureButton = ({ item }) => (
+        <TouchableOpacity
+            onPress={() => navigation.navigate(item.screen)}
+            style={{ width: '30%', alignItems: 'center', marginVertical: 10 }}
+        >
+            <VStack alignItems="center">
+                <Image source={item.image} style={{ width: 75, height: 70 }} rounded={100} alt={item.name} />
+                <Text mt={2} fontWeight="bold">{item.name}</Text>
+            </VStack>
+        </TouchableOpacity>
+    );
 
     return (
-        <>
-            <Header title={"Home"} />
-                <Box w="100%" h="100%" bg="white" borderTopRadius={40}  pb={40}>
-                    <Box bgColor="blue.600" p={5} roundedBottomLeft={40} roundedBottomRight={40} shadow={2}>
-                        <Text fontSize={20} color="white" fontWeight="bold">Selamat Datang di Inventory PLN</Text>
-                        <Text fontWeight="bold" fontSize={20} color="white"> {Home?.name}</Text>
+        <FlatList
+            data={[1]} // Single item for FlatList to handle the entire layout
+            renderItem={() => (
+                <Box w="100%" bg="white">
+                    <Box h={Dimensions.get("window").height / 4} w="100%" position="relative">
+                        <Image
+                            source={require("../assets/banner.png")}
+                            alt="Banner"
+                            resizeMode="cover"
+                            style={{ width: '100%', height: '100%' }}
+                        />
+                        <HStack position="absolute" top={5} left={4} right={4} space={3} alignItems="center">
+                            <Input placeholder="Search..." flex={1} bg="white" borderRadius="full" />
+                            <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
+                                <Image
+                                    source={require("../assets/founder.png")}
+                                    borderRadius={50}
+                                    h={50}
+                                    w={50}
+                                    alt="Profile"
+                                    borderColor={"white.500"}
+                                    borderWidth={4}
+                                />
+                            </TouchableOpacity>
+                        </HStack>
                     </Box>
 
-                    <Box alignItems="center" mt={5}>
-                        <Image
-                            size="xl"
-                            resizeMode="contain"
-                            source={require("../assets/logo.png")}
-                            alt="PLN Logo"
-                            borderRadius="full"
-                            mb={8}
+                    <VStack space={4} px={4} mt={4}>
+                        <FlatList
+                            data={featureData}
+                            renderItem={renderFeatureButton}
+                            keyExtractor={item => item.id}
+                            numColumns={3}
+                            columnWrapperStyle={{ justifyContent: 'space-between' }}
                         />
-                        <VStack space={3} alignItems="center">
-                            <Heading size="lg" color="blue.800" textAlign="center">Sistem dan Teknologi Informasi</Heading>
-                            <Text fontSize="md" color="gray.600" px={8} textAlign="justify">
-                                Sistem Inventory UID JATIM siap membantu, mempermudah dan melacak barang dengan mudah dan efisien.
-                                Akses data inventaris Anda kapan saja dan di mana saja.
-                            </Text>
-                            <VStack >
-                            <Button
-                                mt={4}
-                                size="lg"
-                                colorScheme="blue"
-                                leftIcon={<Icon as={MaterialIcons} name="inventory" size="sm" />}
-                                onPress={() => navigation.navigate('Barang')}
-                                _text={{ fontSize: "md", fontWeight: "bold" }}
-                                shadow={3}
-                                borderRadius={20}
-                                px={6}
-                                py={3}
-                            >
-                                Ajukan Permintaan Barang
-                            </Button>
-                            <Button
-                                mt={4}
-                                size="lg"
-                                colorScheme="blue"
-                                leftIcon={<Icon as={MaterialIcons} name="inbox" size="sm" />}
-                                onPress={() => navigation.navigate('Retur')}
-                                _text={{ fontSize: "md", fontWeight: "bold" }}
-                                shadow={3}
-                                borderRadius={20}
-                                px={6}
-                                py={3}
-                            >
-                                Barang Retur
-                            </Button>
+                    </VStack>
+
+                    <Box p={4} bg="white" width="100%">
+                        <HStack
+                            justifyContent="space-between" 
+                            alignItems="center"
+                            borderWidth={1}
+                            borderColor="gray.300"
+                            borderRadius="md"
+                            p={4}
+                        >
+                            <Image
+                                source={require("../assets/logo-small.png")}
+                                alt="promo"
+                                style={{ width: 30, height: 30 }} rounded={100}
+                            />
+                            <VStack alignItems="between" ml={-3}>
+                                <Text fontSize="md" fontWeight="bold">
+                                    Voucher InDrive❗
+                                </Text>
+                                <Text fontSize="sm" fontWeight="bold">
+                                    Dapatkan Sekarang Juga
+                                </Text>
                             </VStack>
-                        </VStack>
+                            <Button
+                                onPress={() => navigation.navigate('Promo')}
+                                backgroundColor={"#A7E92F"}
+                                rounded={"full"}
+                            >
+                                Lihat Semua
+                            </Button>
+                        </HStack>
+                    </Box>
+
+                    <Box mt={4}>
+                        <FlatList
+                            data={ratingData}
+                            renderItem={renderRatingItem}
+                            keyExtractor={item => item.id}
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={{ paddingHorizontal: 16 }}
+                        />
+                    </Box>
+
+                    <Box px={4} mt={4}>
+                        <FlatList
+                            data={beritaData}
+                            renderItem={({ item }) => (
+                                <Box
+                                    bg="white"
+                                    borderWidth={1}
+                                    borderColor="gray.300"
+                                    borderRadius="md"
+                                    shadow={2}
+                                    overflow="hidden"
+                                    width={screenWidth - 32}
+                                    alignSelf="center"
+                                    mb={4}
+                                >
+                                    <Image
+                                        source={{ uri: item.imageUrl }}
+                                        alt={item.text}
+                                        width="100%"
+                                        height={200}
+                                        resizeMode="cover"
+                                    />
+                                    <Box p={4}>
+                                        <Text fontSize="lg" fontWeight="bold" mb={1}>
+                                            {item.text}
+                                        </Text>
+                                        <Text fontSize="sm" color="gray.600" numberOfLines={2}>
+                                            {item.description}
+                                        </Text>
+                                    </Box>
+                                </Box>
+                            )}
+                            keyExtractor={item => item.key}
+                        />
                     </Box>
                 </Box>
-        </>
+            )}
+            keyExtractor={() => '1'}
+        />
     );
 };
 

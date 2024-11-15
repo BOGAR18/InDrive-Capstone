@@ -7,23 +7,22 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 
 const Header = ({ route, title, withBack = false, }) => {
-    const trueGray900 = "#24a8e0";
-    const navigation = useNavigation();
 
+    const navigation = useNavigation();
 
     return (
         <SafeAreaView>
-            <StatusBar barStyle="light" backgroundColor={trueGray900} />
+            <StatusBar barStyle="light" backgroundColor={"black"} />
             <Box bg={"#fff"} p={"4"}>
                 <HStack justifyContent="space-between" alignItems="center">
                     <HStack alignItems="center">
                         {!withBack ? (
                             <>
                                 <Image
-                                    source={require("../assets/inventory.jpg")}
+                                    source={require("../assets/logo-small.png")}
                                     w="12"
                                     h="12"
-                                    alt="PLN LOGO"
+                                    alt="LOGO"
                                     mr={"3"}
                                 />
                             </>
