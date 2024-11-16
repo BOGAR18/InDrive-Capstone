@@ -61,41 +61,46 @@ const Minibus = () => {
         fetchLocation();
     }, []);
 
-    const handleDestinationSet = async () => {
-        try {
-            const geocode = await Location.geocodeAsync(address);
-            if (geocode.length > 0) {
-                const { latitude, longitude } = geocode[0];
-                setDestinationCoords({ latitude, longitude });
-                setRegion({
-                    latitude,
-                    longitude,
-                    latitudeDelta: 0.01,
-                    longitudeDelta: 0.01,
-                });
-                setIsDestinationSet(true);
-            } else {
+    const handleDestinationChange = (newAddress) => {
+        setAddress(newAddress); // Update alamat tujuan
+    
+        // Jika ada timeout sebelumnya, bersihkan
+        if (typingTimeout) {
+            clearTimeout(typingTimeout);
+        }
+    
+        // Set timeout baru untuk menunggu pengguna selesai mengetik
+        const newTimeout = setTimeout(async () => {
+            try {
+                const geocode = await Location.geocodeAsync(newAddress);
+                if (geocode.length > 0) {
+                    const { latitude, longitude } = geocode[0];
+                    setDestinationCoords({ latitude, longitude });
+    
+                    // Update region peta agar sesuai dengan lokasi tujuan baru
+                    setRegion({
+                        latitude,
+                        longitude,
+                        latitudeDelta: 0.01,
+                        longitudeDelta: 0.01,
+                    });
+                    setIsDestinationSet(true); // Menandakan bahwa tujuan sudah ditetapkan
+                } else {
+                    // Tidak menampilkan toast "lokasi tidak ditemukan"
+                    setIsDestinationSet(false); // Reset jika lokasi tidak ditemukan
+                }
+            } catch (error) {
+                // Menampilkan toast kesalahan hanya setelah pengguna selesai mengetik
                 toast.show({
-                    title: "Lokasi tidak ditemukan",
+                    title: "Terjadi kesalahan saat mencari lokasi",
                     status: "error",
                     duration: 3000,
                     isClosable: true,
                 });
             }
-        } catch (error) {
-            toast.show({
-                title: "Terjadi kesalahan saat mencari lokasi",
-                status: "error",
-                duration: 3000,
-                isClosable: true,
-            });
-        }
-    };
-
-    const handleChangeDestination = () => {
-        setAddress("");
-        setDestinationCoords(null);
-        setIsDestinationSet(false);
+        }, 1000); // Delay selama 1 detik (atau sesuaikan sesuai kebutuhan)
+    
+        setTypingTimeout(newTimeout); // Set timeout baru
     };
 
     const handleBooking = () => {
@@ -136,21 +141,16 @@ const Minibus = () => {
                             InputLeftElement={<Icon as={Ionicons} name="search" size="sm" ml={3} />}
                         />
                     </FormControl>
-                    {isDestinationSet ? (
-                        <HStack space={2}>
-                            <Button colorScheme="blue" flex={1} onPress={handleChangeDestination}>
-                                Ubah Lokasi
-                            </Button>
-                            <Button colorScheme="green" flex={1} onPress={handleBooking}>
-                                Pesan
-                            </Button>
-                        </HStack>
-                    ) : (
-                        <Button colorScheme="blue" onPress={handleDestinationSet} isDisabled={!address}>
-                            Set Tujuan
-                        </Button>
-                    )}
-                </VStack>
+
+                    {/* Tombol Pesan yang muncul hanya ketika lokasi tujuan sudah diinput */}
+                        {address && isDestinationSet && (
+                            <HStack space={2}>
+                                <Button bgColor={"#A7E92F"} flex={1} onPress={handleBooking}>
+                                    Pesan
+                                </Button>
+                            </HStack>
+                        )}
+                    </VStack>
             ) : (
                 <Text fontSize="md" color="gray.600" textAlign="center">
                     Permintaan Anda sedang diproses. Driver akan segera tiba.
@@ -176,6 +176,8 @@ const Minibus = () => {
                             <Image
                                 source={require("../assets/founder.png")}
                                 borderRadius="full"
+                                borderColor={"green.500"}
+                                borderWidth={4}
                                 alt="Driver"
                                 h={60}
                                 w={60}

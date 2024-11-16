@@ -23,6 +23,8 @@ import Settings from "./screens/settings";
 import NomorPonsel from "./screens/nomorponsel";
 import Language from "./screens/language";
 import Tanggal from "./screens/tanggal";
+import Courier from "./screens/courier";
+import Cargo from "./screens/cargo";
 
 // Navigator Declaration
 const Stack = createNativeStackNavigator();
@@ -157,6 +159,8 @@ const App = () => {
           <Stack.Screen name="NomorPonsel" component={NomorPonsel} options={noHead} />
           <Stack.Screen name="Language" component={Language} options={noHead} />
           <Stack.Screen name="Tanggal" component={Tanggal} options={noHead} />
+          <Stack.Screen name="Courier" component={Courier} options={noHead} />
+          <Stack.Screen name="Cargo" component={Cargo} options={noHead} />
         </Stack.Navigator>
       </NavigationContainer>
     </NativeBaseProvider>

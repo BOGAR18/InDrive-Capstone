@@ -4,7 +4,7 @@
     "slug": "InDrive_Capstone",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/indrive-logo.png",
+    "icon": "./assets/logo-small.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/indrive-logo.png",

@@ -22,15 +22,6 @@ const NomorPonsel = () => {
     setPhoneNumber(value); // Awali nomor telepon dengan kode negara
   };
 
-  // const handlePhoneNumberChange = (text) => {
-  //   // Tetap awali dengan kode negara meskipun user mengubah input
-  //   const prefix = selectedCountry;
-  //   const newNumber = text.startsWith(prefix)
-  //     ? text
-  //     : prefix + text.replace(/^\+?\d*/, ""); // Hapus prefiks lama, tambahkan prefiks baru
-  //   setPhoneNumber(newNumber);
-  // };
-
   const handleSave = () => {
     console.log("Kode Negara:", selectedCountry);
     console.log("Nomor telepon baru:", phoneNumber);
